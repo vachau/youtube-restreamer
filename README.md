@@ -14,11 +14,12 @@ Automatically monitor a YouTube channel for livestreams and restream them to ano
 ### Installation
 Download the repository, setup the virtual environment, and install the dependencies
 ```bash
-$ git clone ssh://
-$ cd youtube_restreamer
+$ git clone https://github.com/vachau/youtube-restreamer.git
+$ cd youtube-restreamer
 $ python3 -m venv env
 $ source env/bin/activate
 $ pip install -r requirements.txt
+$ python youtube_restreamer.py
 ```
 Create a configuration file `config.json` specifying the ID of the channel you want to monitor. This can be located on the channel page in the format `https://www.youtube.com/channel/[channel_id]`
 
@@ -35,16 +36,16 @@ Restreaming is supported to any site that supports RTMP. Simply specify a nickna
 ```json
 {
 	"services": {
-		"trovo": {
-			"rtmp_url":  "rtmp://trovo.live/foo",
-			"rtmp_key":  "bar"
+		"twitch": {
+			"rtmp_url":  "rtmp://twitch.tv/live",
+			"rtmp_key":  "foo"
 		}
 	}
 }
 ```
 Then run the application
 ```bash
-$ python youtube_restreamer.py trovo
+$ python youtube_restreamer.py twitch
 ```
 
 ### Restreaming to YouTube
@@ -91,19 +92,24 @@ Options should be specified in the JSON file `config.json` (or a different file 
 	"channel_id":  "UCE_M8A5yxnLfW0KghEeajjw",
 	"youtube_oauth": {
 		"secrets_file":  "client_secret.json",
-		"token_file":  "token.json" // change file that OAuth token is stored in
+		"token_file":  "token.json"
 	},
-	"restream_privacy":  "unlisted", // visibility of YouTube restreams
-	"restream_title":  "Mirror: %s", // title for YouTube restreams where %s is the source stream's title 
+	"restream_privacy":  "unlisted",
+	"restream_title":  "Mirror: %s", 
 	"services": {
-		"trovo": {
-			"rtmp_url":  "rtmp://trovo.live/foo",
-			"rtmp_key":  "bar"
+		"twitch": {
+			"rtmp_url":  "rtmp://twitch.tv/live",
+			"rtmp_key":  "foo"
 		}
 	},
-	"youtube_search_interval":  60 // how often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
+	"youtube_search_interval":  60
 }
 ```
+
+- `token_file`: Specify a different JSON file to store OAuth tokens in
+- `restream_privacy`: Visibility of YouTube restreams ("public" (default) | "unlisted" | "private")
+- `restream_title`: Title of YouTube restreams where %s is replaced with the source stream's title
+- `youtube_search_interval`: How often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
 
 It can also be used as a module. Options are provided as a dictionary instead (the keys are the same as above):
 ```py
@@ -121,7 +127,7 @@ restreamer.restream()
 Additional functionality:
 ```py
 >>> restreamer = Restreamer(options, reset_oauth=True)
->>> restreamer.restream("trovo")
+>>> restreamer.restream("twitch")
 >>> restreamer.end_broadcasts()
 >>> restreamer.get_channel_id("Y7dpJ0oseIA")
 "UCE_M8A5yxnLfW0KghEeajjw"
