@@ -2,6 +2,7 @@ from time import sleep
 import subprocess, threading
 import re
 import sys
+import os, glob
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -23,6 +24,12 @@ def youtube_link_to_id(link):
             video_id = video_id_m
     return video_id
 
+def remove_dir_contents(dir):
+    g = glob.glob(f"{dir}/*")
+    g_hidden = glob.glob(f"{dir}/.*")
+    g.extend(g_hidden)
+    for f in g:
+        os.remove(f)
 
 class SubprocessThread(threading.Thread):
     class RunException(Exception):

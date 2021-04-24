@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from time import sleep
 
 from utils.apis import YoutubeApis, GoogleApis
-from utils.utils import SubprocessThread, ellipsize, youtube_link_to_id
+from utils.utils import SubprocessThread, ellipsize, youtube_link_to_id, remove_dir_contents
 from utils.rtmp import RtmpServer, RtmpRestream, YoutubeRestream
 
 class Restreamer():
@@ -68,6 +68,7 @@ class Restreamer():
                 os.mkdir(self.options["ffmpeg_log_dir"])
             except FileExistsError:
                 pass
+            remove_dir_contents(self.options["ffmpeg_log_dir"])
 
 
     def __end_restream(self, rtmp_restream):
