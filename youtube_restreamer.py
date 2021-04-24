@@ -19,6 +19,8 @@ class Restreamer():
             options["services"] = {}
         if "restream_poll_interval" not in options:
             options["restream_poll_interval"] = 10
+        if "restream_start_delay" not in options:
+            options["restream_start_delay"] = 10
         if "youtube_search_interval" not in options:
             options["youtube_search_interval"] = 120
         if "stream_file_name" not in options:
@@ -31,6 +33,8 @@ class Restreamer():
             options["ffmpeg_bin"] = "ffmpeg"
         if "ffmpeg_log_dir" not in options:
             options["ffmpeg_log_dir"] = None
+        if "ffprobe_bin" not in options:
+            options["ffprobe_bin"] = "ffprobe"
         else:
             # Validate since youtube api response is unhelpful if wrong
             if not options["restream_privacy"] in ["public", "private", "unlisted"]:
@@ -132,7 +136,7 @@ class Restreamer():
 
                             # Don't recreate source streams that timed out
                             if source_stream.id in self.finished_stream_ids:
-                                print("Source stream '{source_stream.id}' already used in a restream, skipping")
+                                print(f"Source stream '{source_stream.id}' already used in a restream, skipping")
 
                             else:
                                 print("Creating restream")
@@ -145,7 +149,9 @@ class Restreamer():
                                         self.options["stream_file_name"], 
                                         source_stream.m3u8_url, source_stream.id, 
                                         log_dir=self.options["ffmpeg_log_dir"],
-                                        ffmpeg_bin=self.options["ffmpeg_bin"]
+                                        ffmpeg_bin=self.options["ffmpeg_bin"],
+                                        ffprobe_bin=self.options["ffprobe_bin"],
+                                        delay=self.options["restream_start_delay"]
                                     )
                                 else:
                                     # TODO create a separate object to keep track of a broadcast
@@ -164,7 +170,9 @@ class Restreamer():
                                             source_stream.m3u8_url, 
                                             source_stream.id, 
                                             log_dir=self.options["ffmpeg_log_dir"],
-                                            ffmpeg_bin=self.options["ffmpeg_bin"]
+                                            ffmpeg_bin=self.options["ffmpeg_bin"],
+                                            ffprobe_bin=self.options["ffprobe_bin"],
+                                            delay=self.options["restream_start_delay"]
                                         )
                                     except GoogleApis.NetworkException as e:
                                         print(e)
@@ -205,8 +213,8 @@ class Restreamer():
                 self.yt_apis.transition_broadcast(broadcast_id, "complete")
             except GoogleApis.HttpException:
                 transitions_failed += 1
-                print("\t Failed")
-        print(f"{transitions_total - transitions_failed} / {transitions_total} successfully ended")
+                print("->Failed")
+        print(f"{transitions_total - transitions_failed}/{transitions_total} successfully ended")
 
         # Return false if all transitions failed
         return transitions_failed < transitions_total

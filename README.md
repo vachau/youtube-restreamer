@@ -96,6 +96,7 @@ Options should be specified in the JSON file `config.json` (or a different file 
 	},
 	"restream_privacy":  "unlisted",
 	"restream_title":  "Mirror: %s", 
+    "restream_start_delay": 10,
 	"services": {
 		"twitch": {
 			"rtmp_url":  "rtmp://twitch.tv/live",
@@ -104,6 +105,7 @@ Options should be specified in the JSON file `config.json` (or a different file 
 	},
 	"youtube_search_interval":  60,
 	"ffmpeg_bin": "/path/to/ffmpeg",
+	"ffprobe_bin": "/path/to/ffprobe",
 	"ffmpeg_log_dir": "logs/"
 }
 ```
@@ -113,7 +115,9 @@ Options should be specified in the JSON file `config.json` (or a different file 
 - `restream_title`: Title of YouTube restreams where %s is replaced with the source stream's title
 - `youtube_search_interval`: How often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
 - `ffmpeg_bin`: Specify a different location for the ffmpeg binary
+- `ffmpeg_bin`: Specify a different location for the ffprobe binary
 - `ffmpeg_log_dir`: Enable logging for ffmpeg subprocesses
+- `restream_start_delay`: How long in seconds to let the source stream downloader buffer before uploading a restream
 
 It can also be used as a module. Options are provided as a dictionary instead (the keys are the same as above):
 ```py

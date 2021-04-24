@@ -1,4 +1,5 @@
 from time import sleep
+import subprocess
 
 from .apis import YoutubeApis
 from .utils import SubprocessThread, ellipsize
@@ -15,7 +16,7 @@ class RtmpRestream():
     class PollException(Exception):
         pass
 
-    def __init__(self, rtmp_server, stream_file_name, input_m3u8, stream_id, delay=10, rtmp_retry_max=3, dl_retry_max=3, log_dir=None, ffmpeg_bin="ffmpeg"):
+    def __init__(self, rtmp_server, stream_file_name, input_m3u8, stream_id, delay=10, rtmp_retry_max=3, dl_retry_max=3, log_dir=None, ffmpeg_bin="ffmpeg", ffprobe_bin="ffprobe"):
         self.rtmp_server = rtmp_server
         self.stream_file_name = stream_file_name
         self.input_m3u8 = input_m3u8
@@ -24,6 +25,7 @@ class RtmpRestream():
         self.rtmp_retry_max = rtmp_retry_max
         self.dl_retry_max = dl_retry_max
         self.ffmpeg_bin = ffmpeg_bin
+        self.ffprobe_bin = ffprobe_bin
         self.dl_thread = None
         self.rtmp_thread = None
         self.dl_retry_c = 0
@@ -44,11 +46,26 @@ class RtmpRestream():
         self.dl_thread = SubprocessThread([self.ffmpeg_bin, "-i", self.input_m3u8, "-c", "copy", "-y", self.stream_file_name], logs)
         self.dl_thread.start()
 
-    def __ffmpeg_send_rtmp(self):
+    def __ffmpeg_send_rtmp(self, seconds_from_end=None):
+        pargs = [self.ffmpeg_bin, "-re"]
+
+        if seconds_from_end is not None:
+            # Get the video duration
+            ffprobe_duration = subprocess.run(
+                [self.ffprobe_bin, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", "stream.ts"],
+                capture_output=True,
+                encoding='utf-8'
+            )
+            duration = float(ffprobe_duration.stdout.split("\n", 1)[0])
+            start_time = duration - seconds_from_end
+            print(f"Starting rtmp client for '{self.stream_file_name}' at start time '{start_time}'")
+            pargs.extend(["-ss", str(start_time)])
+        pargs.extend(["-i", self.stream_file_name, "-c", "copy", "-f", "flv", f"{self.rtmp_server.get_endpoint()}"])
+
         logs = None
         if self.log_dir is not None:
             logs = f"{self.log_dir}ffmpeg-rtmp.log"
-        self.rtmp_thread = SubprocessThread([self.ffmpeg_bin, "-re", "-i", self.stream_file_name, "-c", "copy", "-f", "flv", f"{self.rtmp_server.get_endpoint()}"], logs)
+        self.rtmp_thread = SubprocessThread(pargs, logs)
         self.rtmp_thread.start()
 
     def start(self):
@@ -90,7 +107,7 @@ class RtmpRestream():
                 raise RtmpRestream.PollException(f"Exceeded '{self.rtmp_retry_max}' max restart attempts for restream upload")
             else:
                 print(f"->Retrying {self.rtmp_retry_c + 1}/{self.rtmp_retry_max}")
-                self.__ffmpeg_send_rtmp()
+                self.__ffmpeg_send_rtmp(self.delay)
                 self.rtmp_retry_c += 1
                 return True
 
