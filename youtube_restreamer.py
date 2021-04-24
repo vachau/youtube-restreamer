@@ -29,6 +29,8 @@ class Restreamer():
             options["restream_title"] = "%s"
         if "restream_privacy" not in options:
             options["restream_privacy"] = "public"
+        if "restream_description" not in options:
+            options["restream_description"] = ""
         if "ffmpeg_bin" not in options:
             options["ffmpeg_bin"] = "ffmpeg"
         if "ffmpeg_log_dir" not in options:
@@ -160,7 +162,7 @@ class Restreamer():
                                     # Youtube max title length is 100
                                     broadcast_title = ellipsize(self.options["restream_title"].replace("%s", source_stream.title), 100)
                                     try:
-                                        broadcast = self.yt_apis.create_rtmp_broadcast(broadcast_title, self.options["restream_privacy"])
+                                        broadcast = self.yt_apis.create_rtmp_broadcast(broadcast_title, self.options["restream_description"], self.options["restream_privacy"])
                                         broadcast_id = broadcast["video_id"]
                                         server = RtmpServer(broadcast["rtmp_url"], broadcast["rtmp_key"])
                                         print(f"Created broadcast at 'https://www.youtube.com/watch?v={broadcast_id}'")

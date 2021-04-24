@@ -79,12 +79,14 @@ class RtmpRestream():
 
     def stop(self):
         print("Asking ffmpeg subprocesses to exit")
-        self.dl_thread.stop()
-        self.dl_thread.join()
-        self.rtmp_thread.stop()
-        self.rtmp_thread.join()
-        self.dl_thread = None
-        self.rtmp_thread = None
+        if self.dl_thread is not None:
+            self.dl_thread.stop()
+            self.dl_thread.join()
+            self.dl_thread = None
+        if self.rtmp_thread is not None:
+            self.rtmp_thread.stop()
+            self.rtmp_thread.join()
+            self.rtmp_thread = None
 
     # gives the status of the subprocess threads
     # returns true if running, false if exited normally

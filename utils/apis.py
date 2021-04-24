@@ -212,7 +212,7 @@ class YoutubeApis(GoogleApis):
         return res.get("items", [])
 
     # Creates the actual stream video instance that viewers see
-    def insert_broadcast(self, title, archive=True, privacy="public"):
+    def insert_broadcast(self, title, description=None, archive=True, privacy="public"):
         if not self.is_authorized():
             raise GoogleApis.AuthException("Requires OAuth")
         # Privacy may be: "public", "private", "unlisted"
@@ -229,7 +229,8 @@ class YoutubeApis(GoogleApis):
                 },
                 "snippet": {
                     "scheduledStartTime": broadcast_date.isoformat(),
-                    "title": title
+                    "title": title,
+                    "description": description
                 },
                 "status": {
                     "privacyStatus": privacy
@@ -303,10 +304,10 @@ class YoutubeApis(GoogleApis):
             raise GoogleApis.NetworkException(str(e))
         return res
     
-    def create_rtmp_broadcast(self, title, privacy):
+    def create_rtmp_broadcast(self, title, description, privacy):
         # First, check if a stream exists
         stream_data = self.create_variable_livestream("Variable stream")
-        broadcast_data = self.insert_broadcast(title, privacy=privacy)
+        broadcast_data = self.insert_broadcast(title, description, privacy=privacy)
         data = {
             "video_id": broadcast_data["id"],
             "rtmp_url": stream_data["rtmp_url"],

@@ -29,25 +29,6 @@ Create a configuration file `config.json` specifying the ID of the channel you w
 }
 ```
 
-### Restreaming to most sites (RTMP)
-
-Restreaming is supported to any site that supports RTMP. Simply specify a nickname for the service and the RTMP url and key in your `config.json`
-
-```json
-{
-	"services": {
-		"twitch": {
-			"rtmp_url":  "rtmp://twitch.tv/live",
-			"rtmp_key":  "foo"
-		}
-	}
-}
-```
-Then run the application
-```bash
-$ python youtube_restreamer.py twitch
-```
-
 ### Restreaming to YouTube
 
 The application can also automatically create and stream to live broadcasts on YouTube. To enable this you must get OAuth credentials [here](https://console.cloud.google.com/apis/credentials).
@@ -83,24 +64,46 @@ To switch accounts run with the option `--reset-oauth`
 
 It's recommended to give the application a dedicated channel to prevent it possibly interfering with your other  uploads and streams. 
 
+### Restreaming to most sites (experimental)
+
+*Currently streams are directly uploaded without reencoding. This may not work properly depending on the required encoder settings for your site*
+
+Restreaming is supported to any site that supports RTMP. Simply specify a nickname for the service and the RTMP url and key in your `config.json`
+
+```json
+{
+	"services": {
+		"twitch": {
+			"rtmp_url":  "rtmp://twitch.tv/live",
+			"rtmp_key":  "foo"
+		}
+	}
+}
+```
+Then run the application
+```bash
+$ python youtube_restreamer.py twitch
+```
+
 ## Configuration
 
 Options should be specified in the JSON file `config.json` (or a different file with `--config CONFIG_FILE`)
 
 ```json
 {
-	"channel_id":  "UCE_M8A5yxnLfW0KghEeajjw",
+	"channel_id": "UCE_M8A5yxnLfW0KghEeajjw",
 	"youtube_oauth": {
-		"secrets_file":  "client_secret.json",
-		"token_file":  "token.json"
+		"secrets_file": "client_secret.json",
+		"token_file": "token.json"
 	},
-	"restream_privacy":  "unlisted",
-	"restream_title":  "Mirror: %s", 
+	"restream_privacy": "unlisted",
+	"restream_title": "Mirror: %s",
+	"restream_description": "Video description",
     "restream_start_delay": 10,
 	"services": {
 		"twitch": {
-			"rtmp_url":  "rtmp://twitch.tv/live",
-			"rtmp_key":  "foo"
+			"rtmp_url": "rtmp://twitch.tv/live",
+			"rtmp_key": "foo"
 		}
 	},
 	"youtube_search_interval":  60,
@@ -113,6 +116,7 @@ Options should be specified in the JSON file `config.json` (or a different file 
 - `token_file`: Specify a different JSON file to store OAuth tokens in
 - `restream_privacy`: Visibility of YouTube restreams ("public" (default) | "unlisted" | "private")
 - `restream_title`: Title of YouTube restreams where %s is replaced with the source stream's title
+- `restream_description`: Description of YouTube restream
 - `youtube_search_interval`: How often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
 - `ffmpeg_bin`: Specify a different location for the ffmpeg binary
 - `ffmpeg_bin`: Specify a different location for the ffprobe binary
