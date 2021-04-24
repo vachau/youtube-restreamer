@@ -102,7 +102,9 @@ Options should be specified in the JSON file `config.json` (or a different file 
 			"rtmp_key":  "foo"
 		}
 	},
-	"youtube_search_interval":  60
+	"youtube_search_interval":  60,
+	"ffmpeg_bin": "/path/to/ffmpeg",
+	"ffmpeg_log_dir": "logs/"
 }
 ```
 
@@ -110,6 +112,8 @@ Options should be specified in the JSON file `config.json` (or a different file 
 - `restream_privacy`: Visibility of YouTube restreams ("public" (default) | "unlisted" | "private")
 - `restream_title`: Title of YouTube restreams where %s is replaced with the source stream's title
 - `youtube_search_interval`: How often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
+- `ffmpeg_bin`: Specify a different location for the ffmpeg binary
+- `ffmpeg_log_dir`: Enable logging for ffmpeg subprocesses
 
 It can also be used as a module. Options are provided as a dictionary instead (the keys are the same as above):
 ```py
