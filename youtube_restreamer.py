@@ -20,13 +20,15 @@ class Restreamer():
         if "restream_poll_interval" not in options:
             options["restream_poll_interval"] = 10
         if "youtube_search_interval" not in options:
-            options["youtube_search_interval"] = 60
+            options["youtube_search_interval"] = 120
         if "stream_file_name" not in options:
             options["stream_file_name"] = "stream.ts"
         if "restream_title" not in options:
             options["restream_title"] = "%s"
         if "restream_privacy" not in options:
             options["restream_privacy"] = "public"
+        if "ffmpeg_bin" not in options:
+            options["ffmpeg_bin"] = "ffmpeg"
         else:
             # Validate since youtube api response is unhelpful if wrong
             if not options["restream_privacy"] in ["public", "private", "unlisted"]:
@@ -188,12 +190,6 @@ class Restreamer():
 
         # Return false if all transitions failed
         return transitions_failed < transitions_total
-        
-    def get_channel_id(self, id_or_link):
-        video_id = id_or_link
-        if len(video_id) != 11:
-            video_id = youtube_link_to_id(video_id)
-        print(self.yt_apis.list_videos(video_id).get("snippet").get("channelId"))
 
 def main():
     parser = ArgumentParser(description='Automatically download/restream youtube livestreams')
@@ -201,7 +197,6 @@ def main():
     parser.add_argument("service", nargs="?", metavar="SERVICE", default="youtube", help="Key of server listed in JSON to restream to (leave out for youtube)")
     parser.add_argument("--reset-oauth", action="store_true", dest="reset_oauth", help="Ignore any saved OAuth tokens")
     parser.add_argument("--end-broadcasts", action="store_true", dest="end_broadcasts", help="End all YouTube live broadcasts")
-    parser.add_argument("--get-channel-id", metavar="ID_OR_LINK", dest="get_channel_id", help="Retreive channel id from video link or id")
 
     args = parser.parse_args()
 
@@ -213,8 +208,6 @@ def main():
 
     if args.end_broadcasts:
         restreamer.end_broadcasts()
-    elif args.get_channel_id is not None:
-        restreamer.get_channel_id(args.get_channel_id)
     else:
         restreamer.restream(args.service)
 

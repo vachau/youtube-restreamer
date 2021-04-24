@@ -129,10 +129,6 @@ Additional functionality:
 >>> restreamer = Restreamer(options, reset_oauth=True)
 >>> restreamer.restream("twitch")
 >>> restreamer.end_broadcasts()
->>> restreamer.get_channel_id("Y7dpJ0oseIA")
-"UCE_M8A5yxnLfW0KghEeajjw"
->>> restreamer.get_channel_id("https://www.youtube.com/watch?v=Y7dpJ0oseIA")
-"UCE_M8A5yxnLfW0KghEeajjw"
 ```
 
 ## Limitations
