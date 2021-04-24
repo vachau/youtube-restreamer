@@ -147,3 +147,4 @@ config.testing.json
 
 # Project files
 .vscode/
+logs/

@@ -25,6 +25,9 @@ def youtube_link_to_id(link):
 
 
 class SubprocessThread(threading.Thread):
+    class RunException(Exception):
+        pass
+
     def __init__(self, pargs, logfile=None):
         threading.Thread.__init__(self)
         self._stop_event = threading.Event()
@@ -58,7 +61,6 @@ class SubprocessThread(threading.Thread):
                 self.returncode = popen.returncode
                 print(f"Process '{ellipsize(pargs_to_cmd(self.pargs), 75)}' exited with code {self.returncode}")
                 return
-                #raise subprocess.CalledProcessError(popen.returncode, self.pargs)
             sleep(1)
 
     def run(self):

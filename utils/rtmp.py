@@ -1,7 +1,7 @@
 from time import sleep
 
-from apis import YoutubeApis
-from utils import SubprocessThread, ellipsize
+from .apis import YoutubeApis
+from .utils import SubprocessThread, ellipsize
 
 class RtmpServer():
     def __init__(self, url, key):
@@ -15,7 +15,7 @@ class RtmpRestream():
     class PollException(Exception):
         pass
 
-    def __init__(self, rtmp_server, stream_file_name, input_m3u8, stream_id, delay=10, rtmp_retry_max=3, dl_retry_max=3):
+    def __init__(self, rtmp_server, stream_file_name, input_m3u8, stream_id, delay=10, rtmp_retry_max=3, dl_retry_max=3, log_dir=None, ffmpeg_bin="ffmpeg"):
         self.rtmp_server = rtmp_server
         self.stream_file_name = stream_file_name
         self.input_m3u8 = input_m3u8
@@ -23,17 +23,32 @@ class RtmpRestream():
         self.delay = delay
         self.rtmp_retry_max = rtmp_retry_max
         self.dl_retry_max = dl_retry_max
+        self.ffmpeg_bin = ffmpeg_bin
         self.dl_thread = None
         self.rtmp_thread = None
         self.dl_retry_c = 0
         self.rtmp_retry_c = 0
+        self.log_dir = log_dir
+        if self.log_dir == "":
+            # so we don't accidentially put logs in /
+            self.log_dir = None
+        elif self.log_dir is not None:
+            if not self.log_dir.endswith("/"):
+                self.log_dir += "/"
+
 
     def __ffmpeg_download_stream(self):
-        self.dl_thread = SubprocessThread(["ffmpeg", "-i", self.input_m3u8, "-c", "copy", "-y", self.stream_file_name], "ffmpeg-dl.log")
+        logs = None
+        if self.log_dir is not None:
+            logs = f"{self.log_dir}ffmpeg-dl.log"
+        self.dl_thread = SubprocessThread([self.ffmpeg_bin, "-i", self.input_m3u8, "-c", "copy", "-y", self.stream_file_name], logs)
         self.dl_thread.start()
 
     def __ffmpeg_send_rtmp(self):
-        self.rtmp_thread = SubprocessThread(["ffmpeg", "-re", "-i", self.stream_file_name, "-c", "copy", "-f", "flv", f"{self.rtmp_server.get_endpoint()}"], "ffmpeg-rtmp.log")
+        logs = None
+        if self.log_dir is not None:
+            logs = f"{self.log_dir}ffmpeg-rtmp.log"
+        self.rtmp_thread = SubprocessThread([self.ffmpeg_bin, "-re", "-i", self.stream_file_name, "-c", "copy", "-f", "flv", f"{self.rtmp_server.get_endpoint()}"], logs)
         self.rtmp_thread.start()
 
     def start(self):

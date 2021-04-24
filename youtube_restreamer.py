@@ -2,9 +2,9 @@ import os, json
 from argparse import ArgumentParser
 from time import sleep
 
-from apis import YoutubeApis, GoogleApis
-from utils import SubprocessThread, ellipsize, youtube_link_to_id
-from rtmp import RtmpServer, RtmpRestream, YoutubeRestream
+from utils.apis import YoutubeApis, GoogleApis
+from utils.utils import SubprocessThread, ellipsize, youtube_link_to_id
+from utils.rtmp import RtmpServer, RtmpRestream, YoutubeRestream
 
 class Restreamer():
     class ValidateOptionsException(Exception):
@@ -29,6 +29,8 @@ class Restreamer():
             options["restream_privacy"] = "public"
         if "ffmpeg_bin" not in options:
             options["ffmpeg_bin"] = "ffmpeg"
+        if "ffmpeg_log_dir" not in options:
+            options["ffmpeg_log_dir"] = None
         else:
             # Validate since youtube api response is unhelpful if wrong
             if not options["restream_privacy"] in ["public", "private", "unlisted"]:
@@ -57,6 +59,11 @@ class Restreamer():
         self.yt_apis = YoutubeApis()
         if options["youtube_oauth"] is not None:
             self.yt_apis.auth_oauth(self.options["youtube_oauth"]["token_file"], self.options["youtube_oauth"]["secrets_file"], reset_oauth)
+        if self.options["ffmpeg_log_dir"]:
+            try:
+                os.mkdir(self.options["ffmpeg_log_dir"])
+            except FileExistsError:
+                pass
 
 
     def __end_restream(self, rtmp_restream):
@@ -134,7 +141,12 @@ class Restreamer():
 
                                 if rtmp_server is not None:
                                     print(f"Using service '{service}'")
-                                    rtmp_restream = RtmpRestream(rtmp_server, self.options["stream_file_name"], source_stream.m3u8_url, source_stream.id)
+                                    rtmp_restream = RtmpRestream(rtmp_server, 
+                                        self.options["stream_file_name"], 
+                                        source_stream.m3u8_url, source_stream.id, 
+                                        log_dir=self.options["ffmpeg_log_dir"],
+                                        ffmpeg_bin=self.options["ffmpeg_bin"]
+                                    )
                                 else:
                                     # TODO create a separate object to keep track of a broadcast
                                     print("Using OAuth YouTube account")
@@ -145,7 +157,15 @@ class Restreamer():
                                         broadcast_id = broadcast["video_id"]
                                         server = RtmpServer(broadcast["rtmp_url"], broadcast["rtmp_key"])
                                         print(f"Created broadcast at 'https://www.youtube.com/watch?v={broadcast_id}'")
-                                        rtmp_restream = YoutubeRestream(self.yt_apis, broadcast_id, server, self.options["stream_file_name"], source_stream.m3u8_url, source_stream.id)
+                                        rtmp_restream = YoutubeRestream(self.yt_apis, 
+                                            broadcast_id, 
+                                            server, 
+                                            self.options["stream_file_name"], 
+                                            source_stream.m3u8_url, 
+                                            source_stream.id, 
+                                            log_dir=self.options["ffmpeg_log_dir"],
+                                            ffmpeg_bin=self.options["ffmpeg_bin"]
+                                        )
                                     except GoogleApis.NetworkException as e:
                                         print(e)
                                     except GoogleApis.HttpException as e:
