@@ -47,7 +47,7 @@ class SubprocessThread(threading.Thread):
         if self.logfile is None:
             popen = subprocess.Popen(self.pargs, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            f = open(self.logfile, "w")
+            f = open(self.logfile, "a")
             f.write(f"{str(self.pargs)}\n")
             f.flush()
             popen = subprocess.Popen(self.pargs, stdout=f, stderr=subprocess.STDOUT, universal_newlines=True)
