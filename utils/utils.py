@@ -3,9 +3,22 @@ import subprocess, threading
 import re
 import sys
 import os, glob
+import logging
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+class LoggingLevel:
+    LEVELS = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }
+    LEVELS_KEYS = list(LEVELS.keys())
+
+    def __init__(self, level_str):
+        self.level_str = level_str.lower()
+        self.level = LoggingLevel.LEVELS.get(self.level_str)
+
 
 def ellipsize(full_str, max_length, ellipsis="..."):
     max_length -= len(ellipsis)
@@ -66,7 +79,7 @@ class SubprocessThread(threading.Thread):
                 if f is not None:
                     f.close() 
                 self.returncode = popen.returncode
-                print(f"Process '{ellipsize(pargs_to_cmd(self.pargs), 75)}' exited with code {self.returncode}")
+                logging.warning(f"Process '{ellipsize(pargs_to_cmd(self.pargs), 75)}' exited with code {self.returncode}")
                 return
             sleep(1)
 
