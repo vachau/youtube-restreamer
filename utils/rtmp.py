@@ -52,7 +52,7 @@ class RtmpRestream():
         if seconds_from_end is not None:
             # Get the video duration
             ffprobe_duration = subprocess.run(
-                [self.ffprobe_bin, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", "stream.ts"],
+                [self.ffprobe_bin, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.stream_file_name],
                 capture_output=True,
                 encoding='utf-8'
             )
