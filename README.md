@@ -99,8 +99,8 @@ Options should be specified in the JSON file `config.json`
 		"token_file": "token.json"
 	},
 	"restream_privacy": "unlisted",
-	"restream_title": "Mirror: %s",
-	"restream_description": "Video description",
+	"restream_title_format": "Mirror: {title}",
+	"restream_description_format": "This is a restream of {title}. Original stream: {url}",
     "restream_start_delay": 10,
 	"services": {
 		"twitch": {
@@ -117,13 +117,22 @@ Options should be specified in the JSON file `config.json`
 
 - `token_file`: Specify a different JSON file to store OAuth tokens in
 - `restream_privacy`: Visibility of YouTube restreams ("public" (default) | "unlisted" | "private")
-- `restream_title`: Title of YouTube restreams where %s is replaced with the source stream's title
-- `restream_description`: Description of YouTube restream
+- `restream_title_format`: Title of YouTube restreams
+- `restream_description_format`: Description of YouTube restream
 - `youtube_search_interval`: How often in seconds to fetch the list of streams from channel_id (don't recommend setting this lower than 1 minute)
 - `ffmpeg_bin`: Specify a different location for the ffmpeg binary
 - `ffmpeg_bin`: Specify a different location for the ffprobe binary
 - `ffmpeg_log_dir`: Enable logging for ffmpeg subprocesses
 - `restream_start_delay`: How long in seconds to let the source stream downloader buffer before uploading a restream
+
+#### Formats
+
+For the `_format` options there are several placeholders that can be replaced with source stream information:
+
+- `{title}`: Source stream title
+- `{url}`: Full link to the source YouTube broadast
+- `{channel_name}`: Source stream channel name
+- `{channel_url}`: Full link to the source YouTube channel
 
 ### Arguments
 
