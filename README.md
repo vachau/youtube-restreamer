@@ -87,7 +87,9 @@ $ python youtube_restreamer.py twitch
 
 ## Configuration
 
-Options should be specified in the JSON file `config.json` (or a different file with `--config CONFIG_FILE`)
+### File
+
+Options should be specified in the JSON file `config.json`
 
 ```json
 {
@@ -123,7 +125,19 @@ Options should be specified in the JSON file `config.json` (or a different file 
 - `ffmpeg_log_dir`: Enable logging for ffmpeg subprocesses
 - `restream_start_delay`: How long in seconds to let the source stream downloader buffer before uploading a restream
 
-It can also be used as a module. Options are provided as a dictionary instead (the keys are the same as above):
+### Arguments
+
+There are also several command-line only options:
+
+- `-c CONFIG`, `--config CONFIG`: Specify a different JSON config file than the default `config.json`
+- `--reset-oauth`: Ignore any saved OAuth tokens. Used to switch YouTube accounts
+- `--log-level`: Set the log level used by Python's [logging module](https://docs.python.org/3/howto/logging.html). Default is INFO; WARNING is useful for hiding all normal status messages
+- `--quiet`: Don't print any output (overrides log level)
+- `--end-broadcasts`: Attempt to force end all YouTube live broadcasts
+
+## Module
+
+The application can also be imported as a Python module. Options are provided as a dictionary instead (the keys are the same as above):
 ```py
 from youtube_restreamer import Restreamer
 
