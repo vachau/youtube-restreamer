@@ -19,8 +19,8 @@ class Restreamer():
             options["services"] = {}
         if "restream_poll_interval" not in options:
             options["restream_poll_interval"] = 10
-        if "restream_start_delay" not in options:
-            options["restream_start_delay"] = 10
+        if "restream_delay_diff" not in options:
+            options["restream_delay_diff"] = 2
         if "youtube_search_interval" not in options:
             options["youtube_search_interval"] = 120
         if "stream_file_name" not in options:
@@ -145,6 +145,7 @@ class Restreamer():
                                 print("Creating restream")
                                 stream_m3u8_ellipsized = ellipsize(source_stream.m3u8_url, 75)
                                 print(f"m3u8 '{stream_m3u8_ellipsized}'")
+                                restream_delay = self.options["restream_poll_interval"] - self.options["restream_delay_diff"]
 
                                 if rtmp_server is not None:
                                     print(f"Using service '{service}'")
@@ -154,7 +155,7 @@ class Restreamer():
                                         log_dir=self.options["ffmpeg_log_dir"],
                                         ffmpeg_bin=self.options["ffmpeg_bin"],
                                         ffprobe_bin=self.options["ffprobe_bin"],
-                                        delay=self.options["restream_start_delay"]
+                                        delay=restream_delay
                                     )
                                 else:
                                     # TODO create a separate object to keep track of a broadcast
@@ -175,7 +176,7 @@ class Restreamer():
                                             log_dir=self.options["ffmpeg_log_dir"],
                                             ffmpeg_bin=self.options["ffmpeg_bin"],
                                             ffprobe_bin=self.options["ffprobe_bin"],
-                                            delay=self.options["restream_start_delay"]
+                                            delay=restream_delay
                                         )
                                     except GoogleApis.NetworkException as e:
                                         print(e)
