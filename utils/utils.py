@@ -5,6 +5,21 @@ import sys
 import os, glob
 import logging
 
+class LoggingLevel:
+    LEVELS = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }
+    LEVELS_KEYS = list(LEVELS.keys())
+
+    def __init__(self, level_str):
+        self.level_str = level_str.lower()
+        self.level = LoggingLevel.LEVELS.get(self.level_str)
+
+
 def ellipsize(full_str, max_length, ellipsis="..."):
     max_length -= len(ellipsis)
     return full_str[:max_length] + (full_str[max_length:] and ellipsis)

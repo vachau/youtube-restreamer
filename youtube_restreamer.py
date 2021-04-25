@@ -4,7 +4,7 @@ from time import sleep
 import logging
 
 from utils.apis import YoutubeApis, GoogleApis
-from utils.utils import SubprocessThread, ellipsize, youtube_link_to_id, remove_dir_contents
+from utils.utils import SubprocessThread, ellipsize, youtube_link_to_id, remove_dir_contents, LoggingLevel
 from utils.rtmp import RtmpServer, RtmpRestream, YoutubeRestream
 
 class Restreamer():
@@ -229,15 +229,22 @@ def main():
     parser.add_argument("service", nargs="?", metavar="SERVICE", default="youtube", help="Key of server listed in JSON to restream to (leave out for youtube)")
     parser.add_argument("--reset-oauth", action="store_true", dest="reset_oauth", help="Ignore any saved OAuth tokens")
     parser.add_argument("--end-broadcasts", action="store_true", dest="end_broadcasts", help="End all YouTube live broadcasts")
+    parser.add_argument("--quiet", action="store_true", help="Don't print any output")
+    parser.add_argument("--log-level", choices=LoggingLevel.LEVELS_KEYS, default=None, dest="log_level", help="Set logging level")
 
     args = parser.parse_args()
+
+    if args.quiet:
+        logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
+    if args.log_level is None:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
+    else:
+        logging_level = LoggingLevel(args.log_level)
+        logging.basicConfig(level=logging_level.level)
 
     options = {}
     with open(args.config) as f:
         options = json.load(f)
-
-    logging.basicConfig(level=logging.INFO)
-    exit()
 
     restreamer = Restreamer(options, reset_oauth=args.reset_oauth)
 
