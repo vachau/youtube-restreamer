@@ -26,12 +26,12 @@ class Restreamer():
             options["youtube_search_interval"] = 120
         if "stream_file_name" not in options:
             options["stream_file_name"] = "stream.ts"
-        if "restream_title" not in options:
-            options["restream_title"] = "%s"
+        if "restream_title_format" not in options:
+            options["restream_title_format"] = "{title}"
         if "restream_privacy" not in options:
             options["restream_privacy"] = "public"
-        if "restream_description" not in options:
-            options["restream_description"] = ""
+        if "restream_description_format" not in options:
+            options["restream_description_format"] = ""
         if "ffmpeg_bin" not in options:
             options["ffmpeg_bin"] = "ffmpeg"
         if "ffmpeg_log_dir" not in options:
@@ -73,6 +73,9 @@ class Restreamer():
                 pass
             remove_dir_contents(self.options["ffmpeg_log_dir"])
 
+    def __format_restream_field(self, live_broadcast, placeholder):
+        # TODO find a cleaner way to do this
+        return placeholder.replace("{title}", live_broadcast.title).replace("{url}", live_broadcast.url).replace("{channel_name}", live_broadcast.channel_name).replace("{channel_url}", live_broadcast.channel_url)
 
     def __end_restream(self, rtmp_restream):
         rtmp_restream.stop()
@@ -161,9 +164,10 @@ class Restreamer():
                                     # TODO create a separate object to keep track of a broadcast
                                     logging.info("Using OAuth YouTube account")
                                     # Youtube max title length is 100
-                                    broadcast_title = ellipsize(self.options["restream_title"].replace("%s", source_stream.title), 100)
+                                    broadcast_title = ellipsize(self.__format_restream_field(source_stream, self.options["restream_title_format"]), 100)
+                                    broadcast_desc = self.__format_restream_field(source_stream, self.options["restream_description_format"])
                                     try:
-                                        broadcast = self.yt_apis.create_rtmp_broadcast(broadcast_title, self.options["restream_description"], self.options["restream_privacy"])
+                                        broadcast = self.yt_apis.create_rtmp_broadcast(broadcast_title, broadcast_desc, self.options["restream_privacy"])
                                         broadcast_id = broadcast["video_id"]
                                         server = RtmpServer(broadcast["rtmp_url"], broadcast["rtmp_key"])
                                         logging.info(f"Created broadcast at 'https://www.youtube.com/watch?v={broadcast_id}'")

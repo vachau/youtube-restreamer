@@ -10,11 +10,14 @@ import youtube_dl
 import logging
 
 class LiveBroadcast():
-    def __init__(self, broadcast_id, title, m3u8_url=None, protocol="m3u8", mine=False):
+    def __init__(self, broadcast_id, title, channel_id, channel_name="", m3u8_url=None, protocol="m3u8", mine=False):
         self.id = broadcast_id
         self.title = title
         self.m3u8_url = m3u8_url
         self.url = f"https://www.youtube.com/watch?v={broadcast_id}"
+        self.channel_id = channel_id
+        self.channel_url = f"https://www.youtube.com/channel/{channel_id}"
+        self.channel_name = channel_name
         self.protocol = protocol
         self.mine = mine
 
@@ -82,7 +85,8 @@ class YoutubeApis(GoogleApis):
             for item in items:
                 single_stream = LiveBroadcast(
                     item.get("id").get("videoId"), 
-                    item.get("snippet").get("title")
+                    item.get("snippet").get("title"),
+                    channel_id
                 )
 
                 livestreams.append(single_stream)
@@ -109,7 +113,9 @@ class YoutubeApis(GoogleApis):
                     single_stream = LiveBroadcast(
                         res_item["id"],
                         res_item["title"],
-                        res_item["url"],
+                        channel_id,
+                        channel_name=res_item["channel"],
+                        m3u8_url=res_item["url"]
                     )
                     livestreams.append(single_stream)
             except youtube_dl.utils.DownloadError as e: 
