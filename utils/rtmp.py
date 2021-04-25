@@ -1,5 +1,6 @@
 from time import sleep
 import subprocess
+import logging
 
 from .apis import YoutubeApis
 from .utils import SubprocessThread, ellipsize
@@ -52,13 +53,13 @@ class RtmpRestream():
         if seconds_from_end is not None:
             # Get the video duration
             ffprobe_duration = subprocess.run(
-                [self.ffprobe_bin, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", "stream.ts"],
+                [self.ffprobe_bin, "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.stream_file_name],
                 capture_output=True,
                 encoding='utf-8'
             )
             duration = float(ffprobe_duration.stdout.split("\n", 1)[0])
             start_time = duration - seconds_from_end
-            print(f"Starting rtmp client for '{self.stream_file_name}' at start time '{start_time}'")
+            logging.info(f"Starting rtmp client for '{self.stream_file_name}' at start time '{start_time}'")
             pargs.extend(["-ss", str(start_time)])
         pargs.extend(["-i", self.stream_file_name, "-c", "copy", "-f", "flv", f"{self.rtmp_server.get_endpoint()}"])
 
@@ -69,16 +70,16 @@ class RtmpRestream():
         self.rtmp_thread.start()
 
     def start(self):
-        print("Creating thread with ffmpeg downloader")
+        logging.info("Creating thread with ffmpeg downloader")
         self.__ffmpeg_download_stream()
-        print(f"Delaying {self.delay} seconds to prevent overrunning file")
+        logging.info(f"Delaying {self.delay} seconds to prevent overrunning file")
         sleep(self.delay)
-        print("Creating thread with ffmpeg rtmp client")
+        logging.info("Creating thread with ffmpeg rtmp client")
         self.__ffmpeg_send_rtmp()
 
 
     def stop(self):
-        print("Asking ffmpeg subprocesses to exit")
+        logging.info("Asking ffmpeg subprocesses to exit")
         if self.dl_thread is not None:
             self.dl_thread.stop()
             self.dl_thread.join()
@@ -93,22 +94,22 @@ class RtmpRestream():
     def poll(self):
         if not self.dl_thread.is_alive():
             self.dl_thread.join()
-            print(f"Restream :{self.stream_id}': source stream download failed")
+            logging.warning(f"Restream :{self.stream_id}': source stream download failed")
             if self.dl_retry_c >= self.dl_retry_max:
                 raise RtmpRestream.PollException(f"Exceeded '{self.dl_retry_max}' max restart attempts for source stream download")
             else:
-                print(f"->Retrying {self.dl_retry_c + 1}/{self.dl_retry_max}")
+                logging.warning(f"->Retrying {self.dl_retry_c + 1}/{self.dl_retry_max}")
                 self.__ffmpeg_download_stream()
                 self.dl_retry_c += 1
                 return True
         
         if not self.rtmp_thread.is_alive():
             self.rtmp_thread.join()
-            print(f"Restream :{self.stream_id}': restream upload failed")
+            logging.warning(f"Restream :{self.stream_id}': restream upload failed")
             if self.rtmp_retry_c >= self.rtmp_retry_max:
                 raise RtmpRestream.PollException(f"Exceeded '{self.rtmp_retry_max}' max restart attempts for restream upload")
             else:
-                print(f"->Retrying {self.rtmp_retry_c + 1}/{self.rtmp_retry_max}")
+                logging.warning(f"->Retrying {self.rtmp_retry_c + 1}/{self.rtmp_retry_max}")
                 self.__ffmpeg_send_rtmp(self.delay)
                 self.rtmp_retry_c += 1
                 return True
@@ -126,5 +127,5 @@ class YoutubeRestream(RtmpRestream):
 
     def stop(self):
         super(YoutubeRestream, self).stop()
-        print(f"Ending Youtube broadcast '{self.broadcast_id}'")
+        logging.info(f"Ending Youtube broadcast '{self.broadcast_id}'")
         self.yt_apis.transition_broadcast(self.broadcast_id, "complete")
