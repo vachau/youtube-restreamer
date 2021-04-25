@@ -7,6 +7,7 @@ import googleapiclient.discovery
 import googleapiclient.errors
 import httplib2.error
 import youtube_dl
+import logging
 
 class LiveBroadcast():
     def __init__(self, broadcast_id, title, m3u8_url=None, protocol="m3u8", mine=False):
@@ -186,7 +187,7 @@ class YoutubeApis(GoogleApis):
         # Seems like YT will always create a default variable stream if deleted
         variable_stream_data = None
         if variable_stream is None:
-            print("Creating new variable livestream.")
+            logging.info("Variable livestream not found, creating new one")
             variable_stream_data = self.insert_livestream(title)
         else:
             variable_stream_data = self.parse_livestream_res(variable_stream)
